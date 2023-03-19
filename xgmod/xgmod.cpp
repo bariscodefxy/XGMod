@@ -151,20 +151,6 @@ int AddToFullPack_Post(entity_state_s* state, int e, edict_t* ent, edict_t* host
 			snprintf(pMessage, sizeof(pMessage), "XGMOD v1.0\n%s", CVAR_GET_STRING("xg_hud_customtext"));
 			HudMessage(ENT(ent), { 0.1f, 0.3f, 0, 0, 155, 255, 0, 0, 0, 0, 0, 0.0f, 0.0f, 1.0f, 0.0f, 3 }, pMessage);
 		}
-		if (CVAR_GET_FLOAT("xg_hud_enabled"))
-		{
-			if (ent->v.health >= 0)
-			{
-				char pMessage[512];
-				const char *name = Plugin_info.name;
-				const char *author = Plugin_info.author;
-				const char *version = Plugin_info.version;
-				snprintf(pMessage, sizeof(pMessage), "%s %s by %s", name, version, author);
-				HudMessage(ent, { 0.05f, 0.9f, 1, 255, 255, 0, 0, 255, 0, 0, 0, 0.0, 0.0, 12.0, 6.0, 4 }, pMessage);
-			}
-
-			RETURN_META_VALUE(MRES_IGNORED, 0);
-		}
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, 0);
