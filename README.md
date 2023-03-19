@@ -10,6 +10,8 @@ __   _______   __  __           _
 ```
 **XGMod**, Metamod addon for Half-Life.
 
+![](README/dontuseamxatall.PNG)
+
 ### Features
 - Custom HUD
 - Hud Damage
