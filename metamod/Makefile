@@ -29,11 +29,11 @@ endif
 # set paths for your environment
 ifeq "$(OS)" "Linux"
 	PATH_WIN=/usr/local/cross-tools/i586-mingw32msvc/bin
-	SDKTOP=../../hlsdk
+	SDKTOP=../hlsdk
 	INST_DIR=/usr/local/hlds_l/addons/metamod/dlls
 else	## windows
 	PATH_WIN=/gcc-2.95.2-msvcrt/bin
-	SDKTOP=../../hlsdk
+	SDKTOP=../hlsdk
 	INST_DIR=/hlserver/tfc/dlls
 endif
 

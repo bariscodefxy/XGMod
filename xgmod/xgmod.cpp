@@ -19,6 +19,7 @@
 #define VirtFuncSpawn        2
 #define VirtFuncTakeDamage    14
 #define VirtFuncKilled        16
+#include <sys/mman.h>
 #endif
 
 typedef struct admin_s
@@ -30,6 +31,13 @@ typedef struct admin_s
 cvar_t xg_hud_enabled = { "xg_hud_enabled", "1.0", FCVAR_SERVER };
 cvar_t xg_hud_customtext = { "xg_hud_customtext", "", FCVAR_SERVER };
 cvar_t xg_hud_damage  = { "xg_hud_damage", "1.0", FCVAR_SERVER };
+cvar_t xg_hud_rainbow  = { "xg_hud_rainbow", "0.0", FCVAR_SERVER };
+
+byte hud_colors[3] = {
+	255,
+	255,
+	255
+};
 
 admin_t admins[] = {
 	{
@@ -89,7 +97,7 @@ int HookTakeDamage(void *pthis, entvars_t *pevInflictor, entvars_t *pevAttacker,
 
 	if (CVAR_GET_FLOAT("xg_hud_damage"))
 	{
-		if (pevInflictor && pevAttacker && bitsDamage && flDamage && i)
+		if (pevInflictor && pevAttacker && bitsDamage && flDamage)
 		{
 			char pMessage[512];
 			snprintf(pMessage, sizeof(pMessage), "%f", flDamage);
@@ -148,16 +156,20 @@ int AddToFullPack_Post(entity_state_s* state, int e, edict_t* ent, edict_t* host
 		if (CVAR_GET_FLOAT("xg_hud_enabled"))
 		{
 			char pMessage[512];
-			snprintf(pMessage, sizeof(pMessage), "XGMOD v1.0\n%s", CVAR_GET_STRING("xg_hud_customtext"));
-			HudMessage(ENT(ent), { 0.1f, 0.3f, 0, 0, 155, 255, 0, 0, 0, 0, 0, 0.0f, 0.0f, 1.0f, 0.0f, 3 }, pMessage);
+			snprintf(pMessage, sizeof(pMessage), "XGMOD v1.1\n%s", CVAR_GET_STRING("xg_hud_customtext"));
+			if(CVAR_GET_FLOAT("xg_hud_rainbow")) {
+				hud_colors[0] = rand() % 255;
+				hud_colors[1] = rand() % 255;
+				hud_colors[2] = rand() % 255;
+			}
+			HudMessage(ENT(ent), { 0.05f, 0.05f, 0, hud_colors[0], hud_colors[1], hud_colors[2], 0, 0, 0, 0, 0, 0.0f, 0.0f, 1.0f, 0.0f, 3 }, pMessage);
 		}
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, 0);
 }
 
-
-static unsigned short FixedUnsigned16(float value, float scale)
+extern unsigned short FixedUnsigned16(float value, float scale)
 {
 	int output;
 
@@ -170,7 +182,7 @@ static unsigned short FixedUnsigned16(float value, float scale)
 	return (unsigned short)output;
 }
 
-static short FixedSigned16(float value, float scale)
+extern short FixedSigned16(float value, float scale)
 {
 	int output;
 
@@ -366,7 +378,8 @@ void XG_Init(void)
 	g_engfuncs.pfnCVarRegister(&xg_hud_enabled);
 	g_engfuncs.pfnCVarRegister(&xg_hud_customtext);
 	g_engfuncs.pfnCVarRegister(&xg_hud_damage);
-	g_engfuncs.pfnCVarRegister(&xg_anti_csqq);
+	g_engfuncs.pfnCVarRegister(&xg_hud_rainbow);
+	//g_engfuncs.pfnCVarRegister(&xg_anti_csqq);
 
 	MakeHookTakeDamage();
 

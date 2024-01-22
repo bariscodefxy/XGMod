@@ -1,5 +1,5 @@
-MODNAME = stub_mm
+MODNAME = xgmod
 
-EXTRA_CFLAGS = 
+EXTRA_CFLAGS = -lstdc++
 
-SRCFILES = dllapi.cpp engine_api.cpp h_export.cpp meta_api.cpp sdk_util.cpp
+SRCFILES = dllapi.cpp engine_api.cpp h_export.cpp meta_api.cpp sdk_util.cpp xgmod.cpp
