@@ -1,5 +1,5 @@
-#include <extdll.h>			// always
-#include <meta_api.h>		// of course
+#include <extdll.h>	  // always
+#include <meta_api.h> // of course
 #include <engine_api.h>
 #include <dllapi.h>
 #include <stdio.h>
@@ -8,18 +8,34 @@
 #include <stdarg.h>
 #include <cbase.h>
 #include <player.h>
+#include <FileSystem.h>
 #include "xgmod.h"
 #include "entity_state.h"
 
 #ifdef _WIN32
-#define VirtFuncSpawn        0
-#define VirtFuncTakeDamage    12
-#define VirtFuncKilled        14
+#define VirtFuncSpawn 0
+#define VirtFuncTakeDamage 12
+#define VirtFuncKilled 14
 #elif __linux__
-#define VirtFuncSpawn        2
-#define VirtFuncTakeDamage    14
-#define VirtFuncKilled        16
+#define VirtFuncSpawn 2
+#define VirtFuncTakeDamage 14
+#define VirtFuncKilled 16
 #include <sys/mman.h>
+#endif
+
+#ifndef __has_include
+  static_assert(false, "__has_include not supported");
+#else
+#  if __cplusplus >= 201703L && __has_include(<filesystem>)
+#    include <filesystem>
+     namespace fs = std::filesystem;
+#  elif __has_include(<experimental/filesystem>)
+#    include <experimental/filesystem>
+     namespace fs = std::experimental::filesystem;
+#  elif __has_include(<boost/filesystem.hpp>)
+#    include <boost/filesystem.hpp>
+     namespace fs = boost::filesystem;
+#  endif
 #endif
 
 typedef struct admin_s
@@ -28,23 +44,25 @@ typedef struct admin_s
 	std::string password;
 } admin_t;
 
-cvar_t xg_hud_enabled = { "xg_hud_enabled", "1.0", FCVAR_SERVER };
-cvar_t xg_hud_customtext = { "xg_hud_customtext", "", FCVAR_SERVER };
-cvar_t xg_hud_damage  = { "xg_hud_damage", "1.0", FCVAR_SERVER };
-cvar_t xg_hud_rainbow  = { "xg_hud_rainbow", "0.0", FCVAR_SERVER };
+#define ADMINS_FILE "valve/addons/xgmod/admins.txt"
+
+cvar_t xg_hud_enabled = {"xg_hud_enabled", "1.0", FCVAR_SERVER};
+cvar_t xg_hud_customtext = {"xg_hud_customtext", "", FCVAR_SERVER};
+cvar_t xg_hud_damage = {"xg_hud_damage", "1.0", FCVAR_SERVER};
+cvar_t xg_hud_rainbow = {"xg_hud_rainbow", "0.0", FCVAR_SERVER};
+cvar_t xg_hud_speed = {"xg_hud_speed", "1.0", FCVAR_SERVER};
+cvar_t xg_bhop_enabled = {"xg_bhop_enabled", "1.0", FCVAR_SERVER};
+cvar_t xg_bhop_boost_enabled {"xg_bhop_boost_enabled", "1.0", FCVAR_SERVER};
+cvar_t xg_bhop_boost_multipler {"xg_bhop_boost_multipler", "250.0", FCVAR_SERVER};
 
 byte hud_colors[3] = {
 	255,
 	255,
-	255
-};
+	255};
 
 admin_t admins[] = {
-	{
-		"bariscodefx",
-		"lolw123"
-	}
-};
+	{"bariscodefx",
+	 "lolw123"}};
 int admincount = 1;
 
 std::string admin_logins[32];
@@ -55,8 +73,7 @@ int gmsgTextMsg = 0, gmsgSayText = 0;
 
 void HudMessage(edict_t *pent, const hudtextparms_s &textparms, const char *pMessage);
 
-
-CBaseEntity	*UTIL_PlayerByIndex(int playerIndex)
+CBaseEntity *UTIL_PlayerByIndex(int playerIndex)
 {
 	CBaseEntity *pPlayer = NULL;
 
@@ -92,7 +109,7 @@ int HookTakeDamage(void *pthis, entvars_t *pevInflictor, entvars_t *pevAttacker,
 #ifdef _WIN32
 	int iOrigRet = reinterpret_cast<int(__fastcall *)(void *, int, entvars_t *, entvars_t *, float, int)>(pOrigFuncTakeDamage)(pthis, 0, pevInflictor, pevAttacker, flDamage, bitsDamage);
 #elif __linux__
-	int iOrigRet = reinterpret_cast<int(*)(void *, entvars_t *, entvars_t *, float, int)>(pOrigFuncTakeDamage)(pthis, pevInflictor, pevAttacker, flDamage, bitsDamage);
+	int iOrigRet = reinterpret_cast<int (*)(void *, entvars_t *, entvars_t *, float, int)>(pOrigFuncTakeDamage)(pthis, pevInflictor, pevAttacker, flDamage, bitsDamage);
 #endif
 
 	if (CVAR_GET_FLOAT("xg_hud_damage"))
@@ -101,10 +118,9 @@ int HookTakeDamage(void *pthis, entvars_t *pevInflictor, entvars_t *pevAttacker,
 		{
 			char pMessage[512];
 			snprintf(pMessage, sizeof(pMessage), "%f", flDamage);
-			HudMessage(ENT(pevInflictor), { 0.4f + RANDOM_FLOAT(0.05f, 0.25f), -1.0f, 0, 0, 155, 255, 0, 0, 0, 0, 0, 0.0f, 0.0f, 1.0f, 0.0f, 4 }, pMessage);
+			HudMessage(ENT(pevInflictor), {0.4f + RANDOM_FLOAT(0.05f, 0.25f), -1.0f, 0, 0, 155, 255, 0, 0, 0, 0, 0, 0.0f, 0.0f, 1.0f, 0.0f, 4}, pMessage);
 		}
 	}
-
 
 	return iOrigRet;
 }
@@ -123,9 +139,9 @@ void MakeHookTakeDamage(void)
 	}
 
 #ifdef _WIN32
-	void **vtable = *((void***)((char*)pEdict->pvPrivateData));
+	void **vtable = *((void ***)((char *)pEdict->pvPrivateData));
 #elif __linux__
-	void **vtable = *((void***)(((char*)pEdict->pvPrivateData) + 0x94));
+	void **vtable = *((void ***)(((char *)pEdict->pvPrivateData) + 0x94));
 #endif
 
 	REMOVE_ENTITY(pEdict);
@@ -142,28 +158,41 @@ void MakeHookTakeDamage(void)
 
 	VirtualProtect(&ivtable[VirtFuncTakeDamage], sizeof(int *), PAGE_READWRITE, &OldFlags);
 #elif __linux__
-	mprotect(&ivtable[VirtFuncTakeDamage], sizeof(int*), PROT_READ | PROT_WRITE);
+	mprotect(&ivtable[VirtFuncTakeDamage], sizeof(int *), PROT_READ | PROT_WRITE);
 #endif
 
 	ivtable[VirtFuncTakeDamage] = (int *)HookTakeDamage;
 }
 
-
-int AddToFullPack_Post(entity_state_s* state, int e, edict_t* ent, edict_t* host, int hostflags, BOOL player, unsigned char* pSet)
-{	
+int AddToFullPack_Post(entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, BOOL player, unsigned char *pSet)
+{
 	if (player)
 	{
 		if (CVAR_GET_FLOAT("xg_hud_enabled"))
 		{
 			char pMessage[512];
-			snprintf(pMessage, sizeof(pMessage), "XGMOD v1.1\n%s", CVAR_GET_STRING("xg_hud_customtext"));
-			if(CVAR_GET_FLOAT("xg_hud_rainbow")) {
+			strncpy(pMessage, "XGMOD v1.1\n", sizeof(pMessage));
+
+			if(CVAR_GET_FLOAT("xg_hud_speed"))
+			{
+				char speedtext[32];
+				snprintf(speedtext, sizeof(speedtext), "%f\n", hypot(ent->v.velocity[0], ent->v.velocity[1]));
+				strncat(pMessage, speedtext, sizeof(pMessage));
+			}
+
+			char customtext[300];
+			snprintf(customtext, sizeof(customtext), "%s\n", CVAR_GET_STRING("xg_hud_customtext"));
+			strncat(pMessage, customtext, sizeof(pMessage));
+			if (CVAR_GET_FLOAT("xg_hud_rainbow"))
+			{
 				hud_colors[0] = rand() % 255;
 				hud_colors[1] = rand() % 255;
 				hud_colors[2] = rand() % 255;
 			}
-			HudMessage(ENT(ent), { 0.05f, 0.05f, 0, hud_colors[0], hud_colors[1], hud_colors[2], 0, 0, 0, 0, 0, 0.0f, 0.0f, 1.0f, 0.0f, 3 }, pMessage);
+			HudMessage(ENT(ent), {0.05f, 0.05f, 0, hud_colors[0], hud_colors[1], hud_colors[2], 0, 0, 0, 0, 0, 0.0f, 0.0f, 1.0f, 0.0f, 3}, pMessage);
 		}
+
+		xg_bhop(ent);
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, 0);
@@ -197,7 +226,7 @@ extern short FixedSigned16(float value, float scale)
 	return (short)output;
 }
 
-CBaseEntity	*PlayerByIndex(int playerIndex)
+CBaseEntity *PlayerByIndex(int playerIndex)
 {
 	CBaseEntity *pPlayer = NULL;
 
@@ -218,7 +247,7 @@ void HudMessage(edict_t *pent, const hudtextparms_s &textparms, const char *pMes
 	MESSAGE_BEGIN(MSG_ONE, SVC_TEMPENTITY, NULL, ENT(pent));
 	WRITE_BYTE(TE_TEXTMESSAGE);
 	WRITE_BYTE(textparms.channel & 0xFF);
-	
+
 	WRITE_SHORT(FixedSigned16(textparms.x, 1 << 13));
 	WRITE_SHORT(FixedSigned16(textparms.y, 1 << 13));
 	WRITE_BYTE(textparms.effect);
@@ -254,23 +283,23 @@ void HudMessage(edict_t *pent, const hudtextparms_s &textparms, const char *pMes
 	MESSAGE_END();
 }
 
-qboolean isUserAdmin(edict_t* pEdicts)
+qboolean isUserAdmin(edict_t *pEdicts)
 {
-	const char* userinfo = g_engfuncs.pfnGetInfoKeyBuffer(pEdicts);
-	const char* username = g_engfuncs.pfnInfoKeyValue((char*)userinfo, "name");
+	const char *userinfo = g_engfuncs.pfnGetInfoKeyBuffer(pEdicts);
+	const char *username = g_engfuncs.pfnInfoKeyValue((char *)userinfo, "name");
 
 	for (int i = 0; i < clogin; i++)
 	{
 		if (!strcmp(username, admin_logins[i].c_str()))
 		{
-			return(TRUE);
+			return (TRUE);
 		}
 	}
 
-	return(FALSE);
+	return (FALSE);
 }
 
-void XG_Login(edict_t* pEdicts)
+void XG_Login(edict_t *pEdicts)
 {
 	if (g_engfuncs.pfnCmd_Argc() < 2)
 	{
@@ -278,9 +307,9 @@ void XG_Login(edict_t* pEdicts)
 		return;
 	}
 
-	const char* userinfo = g_engfuncs.pfnGetInfoKeyBuffer(pEdicts);
-	const char* username = g_engfuncs.pfnInfoKeyValue((char*)userinfo, "name");
-	const char* password = g_engfuncs.pfnCmd_Argv(1);
+	const char *userinfo = g_engfuncs.pfnGetInfoKeyBuffer(pEdicts);
+	const char *username = g_engfuncs.pfnInfoKeyValue((char *)userinfo, "name");
+	const char *password = g_engfuncs.pfnCmd_Argv(1);
 
 	for (int i = 0; i < admincount; i++)
 	{
@@ -297,7 +326,7 @@ void XG_Login(edict_t* pEdicts)
 	g_engfuncs.pfnClientPrintf(pEdicts, print_console, "Invalid username or password.\n");
 }
 
-void XG_Ban(edict_t* pEdicts)
+void XG_Ban(edict_t *pEdicts)
 {
 	if (g_engfuncs.pfnCmd_Argc() < 2)
 	{
@@ -316,7 +345,7 @@ void XG_Ban(edict_t* pEdicts)
 	g_engfuncs.pfnClientPrintf(pEdicts, print_console, "User not found.\n");
 }
 
-char* strafter(const char *str, int after)
+char *strafter(const char *str, int after)
 {
 	char newstr[sizeof(str)];
 	for (int i = 0; i < sizeof(str) - 1; i++)
@@ -326,10 +355,10 @@ char* strafter(const char *str, int after)
 	return newstr;
 }
 
-void pfnClientDisconnect(edict_t* pEdicts)
+void pfnClientDisconnect(edict_t *pEdicts)
 {
-	const char* userinfo = g_engfuncs.pfnGetInfoKeyBuffer(pEdicts);
-	const char* username = g_engfuncs.pfnInfoKeyValue((char*)userinfo, "name");
+	const char *userinfo = g_engfuncs.pfnGetInfoKeyBuffer(pEdicts);
+	const char *username = g_engfuncs.pfnInfoKeyValue((char *)userinfo, "name");
 
 	for (int i = 0; i < clogin; i++)
 	{
@@ -342,7 +371,7 @@ void pfnClientDisconnect(edict_t* pEdicts)
 	RETURN_META(MRES_HANDLED);
 }
 
-void pfnClientCommand(edict_t* pEdicts)
+void pfnClientCommand(edict_t *pEdicts)
 {
 	if (g_engfuncs.pfnCmd_Argc() < 1)
 		RETURN_META(MRES_IGNORED);
@@ -368,6 +397,29 @@ void XG_Init(void)
 {
 	UTIL_LogPrintf("Initializing XG MOD\n");
 
+	if (std::filesystem::exists(ADMINS_FILE))
+	{
+		FILE *admfile;
+		admfile = fopen(ADMINS_FILE, "r");
+		if (admfile != NULL) {
+			char str[200];
+			if(fread(str, 200, 1, admfile)!=NULL) {
+				printf(str);
+			}
+			fclose(admfile);
+		}
+	}
+	else
+	{
+		FILE *admfile;
+		admfile = fopen(ADMINS_FILE, "w");
+		if (admfile != NULL)
+		{
+			fputs("; Admins File", admfile);
+			fclose(admfile);
+		}
+	}
+
 	for (int i = 0; i < clogin; i++)
 	{
 		admin_logins[i] = '\0';
@@ -379,7 +431,11 @@ void XG_Init(void)
 	g_engfuncs.pfnCVarRegister(&xg_hud_customtext);
 	g_engfuncs.pfnCVarRegister(&xg_hud_damage);
 	g_engfuncs.pfnCVarRegister(&xg_hud_rainbow);
-	//g_engfuncs.pfnCVarRegister(&xg_anti_csqq);
+	g_engfuncs.pfnCVarRegister(&xg_hud_speed);
+	g_engfuncs.pfnCVarRegister(&xg_bhop_enabled);
+	g_engfuncs.pfnCVarRegister(&xg_bhop_boost_enabled);
+	g_engfuncs.pfnCVarRegister(&xg_bhop_boost_multipler);
+	// g_engfuncs.pfnCVarRegister(&xg_anti_csqq);
 
 	MakeHookTakeDamage();
 

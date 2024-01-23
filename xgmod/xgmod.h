@@ -3,6 +3,9 @@
 //sdk_util.cpp
 void UTIL_LogPrintf(const char *fmt, ...);
 
+//xgbhop.cpp
+int xg_bhop(edict_t *ent);
+
 //xgmod.cpp
 void pfnClientCommand(edict_t* pEdicts);
 void XG_Init(void);
