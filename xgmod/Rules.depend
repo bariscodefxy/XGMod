@@ -1,4 +1,4 @@
-debug.linux.amd64/xgbhop.o debug.darwin/xgbhop.o debug.win32/xgbhop.o:  xgbhop.cpp ../hlsdk/dlls/extdll.h ../hlsdk/public/archtypes.h \
+debug.linux.amd64/xgmod.o debug.darwin/xgmod.o debug.win32/xgmod.o:  xgmod.cpp ../hlsdk/dlls/extdll.h ../hlsdk/public/archtypes.h \
  ../hlsdk/public/steam/steamtypes.h ../hlsdk/dlls/vector.h \
  ../hlsdk/common/const.h ../hlsdk/common/in_buttons.h \
  ../hlsdk/engine/progdefs.h ../hlsdk/engine/edict.h \
@@ -19,7 +19,7 @@ debug.linux.amd64/xgbhop.o debug.darwin/xgbhop.o debug.win32/xgbhop.o:  xgbhop.c
  ../hlsdk/public/archtypes.h ../hlsdk/public/interface.h xgmod.h \
  ../hlsdk/common/entity_state.h ../hlsdk/pm_shared/pm_info.h \
  ../hlsdk/common/weaponinfo.h
-debug.linux.amd64/xgmod.o debug.darwin/xgmod.o debug.win32/xgmod.o:  xgmod.cpp ../hlsdk/dlls/extdll.h ../hlsdk/public/archtypes.h \
+debug.linux.amd64/xgbhop.o debug.darwin/xgbhop.o debug.win32/xgbhop.o:  xgbhop.cpp ../hlsdk/dlls/extdll.h ../hlsdk/public/archtypes.h \
  ../hlsdk/public/steam/steamtypes.h ../hlsdk/dlls/vector.h \
  ../hlsdk/common/const.h ../hlsdk/common/in_buttons.h \
  ../hlsdk/engine/progdefs.h ../hlsdk/engine/edict.h \

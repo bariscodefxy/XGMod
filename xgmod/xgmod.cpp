@@ -24,18 +24,18 @@
 #endif
 
 #ifndef __has_include
-  static_assert(false, "__has_include not supported");
+static_assert(false, "__has_include not supported");
 #else
-#  if __cplusplus >= 201703L && __has_include(<filesystem>)
-#    include <filesystem>
-     namespace fs = std::filesystem;
-#  elif __has_include(<experimental/filesystem>)
-#    include <experimental/filesystem>
-     namespace fs = std::experimental::filesystem;
-#  elif __has_include(<boost/filesystem.hpp>)
-#    include <boost/filesystem.hpp>
-     namespace fs = boost::filesystem;
-#  endif
+#if __cplusplus >= 201703L && __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#elif __has_include(<boost/filesystem.hpp>)
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+#endif
 #endif
 
 typedef struct admin_s
@@ -52,8 +52,8 @@ cvar_t xg_hud_damage = {"xg_hud_damage", "1.0", FCVAR_SERVER};
 cvar_t xg_hud_rainbow = {"xg_hud_rainbow", "0.0", FCVAR_SERVER};
 cvar_t xg_hud_speed = {"xg_hud_speed", "1.0", FCVAR_SERVER};
 cvar_t xg_bhop_enabled = {"xg_bhop_enabled", "1.0", FCVAR_SERVER};
-cvar_t xg_bhop_boost_enabled {"xg_bhop_boost_enabled", "1.0", FCVAR_SERVER};
-cvar_t xg_bhop_boost_multipler {"xg_bhop_boost_multipler", "250.0", FCVAR_SERVER};
+cvar_t xg_bhop_boost_enabled = {"xg_bhop_boost_enabled", "1.0", FCVAR_SERVER};
+cvar_t xg_bhop_boost_multipler = {"xg_bhop_boost_multipler", "250.0", FCVAR_SERVER};
 
 byte hud_colors[3] = {
 	255,
@@ -173,7 +173,7 @@ int AddToFullPack_Post(entity_state_s *state, int e, edict_t *ent, edict_t *host
 			char pMessage[512];
 			strncpy(pMessage, "XGMOD v1.1\n", sizeof(pMessage));
 
-			if(CVAR_GET_FLOAT("xg_hud_speed"))
+			if (CVAR_GET_FLOAT("xg_hud_speed"))
 			{
 				char speedtext[32];
 				snprintf(speedtext, sizeof(speedtext), "%f\n", hypot(ent->v.velocity[0], ent->v.velocity[1]));
@@ -397,13 +397,15 @@ void XG_Init(void)
 {
 	UTIL_LogPrintf("Initializing XG MOD\n");
 
-	if (std::filesystem::exists(ADMINS_FILE))
+	if (fs::exists(ADMINS_FILE))
 	{
 		FILE *admfile;
 		admfile = fopen(ADMINS_FILE, "r");
-		if (admfile != NULL) {
+		if (admfile != NULL)
+		{
 			char str[200];
-			if(fread(str, 200, 1, admfile)!=NULL) {
+			if (fread(str, 200, 1, admfile) != NULL)
+			{
 				printf(str);
 			}
 			fclose(admfile);
