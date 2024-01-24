@@ -23,21 +23,6 @@
 #include <sys/mman.h>
 #endif
 
-#ifndef __has_include
-static_assert(false, "__has_include not supported");
-#else
-#if __cplusplus >= 201703L && __has_include(<filesystem>)
-#include <filesystem>
-namespace fs = std::filesystem;
-#elif __has_include(<experimental/filesystem>)
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#elif __has_include(<boost/filesystem.hpp>)
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-#endif
-#endif
-
 typedef struct admin_s
 {
 	std::string username;
@@ -397,30 +382,30 @@ void XG_Init(void)
 {
 	UTIL_LogPrintf("Initializing XG MOD\n");
 
-	if (fs::exists(ADMINS_FILE))
-	{
-		FILE *admfile;
-		admfile = fopen(ADMINS_FILE, "r");
-		if (admfile != NULL)
-		{
-			char str[200];
-			if (fread(str, 200, 1, admfile) != NULL)
-			{
-				printf(str);
-			}
-			fclose(admfile);
-		}
-	}
-	else
-	{
-		FILE *admfile;
-		admfile = fopen(ADMINS_FILE, "w");
-		if (admfile != NULL)
-		{
-			fputs("; Admins File", admfile);
-			fclose(admfile);
-		}
-	}
+	// if (fs::exists(ADMINS_FILE))
+	// {
+	// 	FILE *admfile;
+	// 	admfile = fopen(ADMINS_FILE, "r");
+	// 	if (admfile != NULL)
+	// 	{
+	// 		char str[200];
+	// 		if (fread(str, 200, 1, admfile) != NULL)
+	// 		{
+	// 			printf(str);
+	// 		}
+	// 		fclose(admfile);
+	// 	}
+	// }
+	// else
+	// {
+	// 	FILE *admfile;
+	// 	admfile = fopen(ADMINS_FILE, "w");
+	// 	if (admfile != NULL)
+	// 	{
+	// 		fputs("; Admins File", admfile);
+	// 		fclose(admfile);
+	// 	}
+	// }
 
 	for (int i = 0; i < clogin; i++)
 	{
