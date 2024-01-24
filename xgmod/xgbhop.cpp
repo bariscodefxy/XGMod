@@ -48,9 +48,9 @@ int xg_bhop(edict_t *ent) {
                 }
 
                 // x-component
-                ent->v.velocity[0] = cos(yaw) * cos(pitch) * multipler; 
+                ent->v.velocity[0] += cos(yaw) * cos(pitch) * multipler; 
                 // z-component
-                ent->v.velocity[1] = sin(yaw) * cos(pitch) * multipler;
+                ent->v.velocity[1] += sin(yaw) * cos(pitch) * multipler;
             }
 
             // y-component
