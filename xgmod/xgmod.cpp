@@ -56,6 +56,8 @@ int clogin = 0;
 void *pOrigFuncTakeDamage;
 int gmsgTextMsg = 0, gmsgSayText = 0;
 
+float healths[32];
+
 void HudMessage(edict_t *pent, const hudtextparms_s &textparms, const char *pMessage);
 
 CBaseEntity *UTIL_PlayerByIndex(int playerIndex)
@@ -85,69 +87,6 @@ void UTIL_SayText(const char *pText, CBaseEntity *pEntity)
 	MESSAGE_END();
 }
 
-#ifdef _WIN32
-int __fastcall HookTakeDamage(void *pthis, int i, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamage)
-#elif __linux__
-int HookTakeDamage(void *pthis, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamage)
-#endif
-{
-#ifdef _WIN32
-	int iOrigRet = reinterpret_cast<int(__fastcall *)(void *, int, entvars_t *, entvars_t *, float, int)>(pOrigFuncTakeDamage)(pthis, 0, pevInflictor, pevAttacker, flDamage, bitsDamage);
-#elif __linux__
-	int iOrigRet = reinterpret_cast<int (*)(void *, entvars_t *, entvars_t *, float, int)>(pOrigFuncTakeDamage)(pthis, pevInflictor, pevAttacker, flDamage, bitsDamage);
-#endif
-
-	if (CVAR_GET_FLOAT("xg_hud_damage"))
-	{
-		if (pevInflictor && pevAttacker && bitsDamage && flDamage)
-		{
-			char pMessage[512];
-			snprintf(pMessage, sizeof(pMessage), "%f", flDamage);
-			HudMessage(ENT(pevInflictor), {0.4f + RANDOM_FLOAT(0.05f, 0.25f), -1.0f, 0, 0, 155, 255, 0, 0, 0, 0, 0, 0.0f, 0.0f, 1.0f, 0.0f, 4}, pMessage);
-		}
-	}
-
-	return iOrigRet;
-}
-
-void MakeHookTakeDamage(void)
-{
-	edict_t *pEdict = CREATE_ENTITY();
-
-	CALL_GAME_ENTITY(PLID, "player", &pEdict->v);
-
-	if (pEdict->pvPrivateData == NULL)
-	{
-		REMOVE_ENTITY(pEdict);
-
-		return;
-	}
-
-#ifdef _WIN32
-	void **vtable = *((void ***)((char *)pEdict->pvPrivateData));
-#elif __linux__
-	void **vtable = *((void ***)(((char *)pEdict->pvPrivateData) + 0x94));
-#endif
-
-	REMOVE_ENTITY(pEdict);
-
-	if (vtable == NULL)
-		return;
-
-	int **ivtable = (int **)vtable;
-
-	pOrigFuncTakeDamage = (void *)ivtable[VirtFuncTakeDamage];
-
-#ifdef _WIN32
-	DWORD OldFlags;
-
-	VirtualProtect(&ivtable[VirtFuncTakeDamage], sizeof(int *), PAGE_READWRITE, &OldFlags);
-#elif __linux__
-	mprotect(&ivtable[VirtFuncTakeDamage], sizeof(int *), PROT_READ | PROT_WRITE);
-#endif
-
-	ivtable[VirtFuncTakeDamage] = (int *)HookTakeDamage;
-}
 
 int AddToFullPack_Post(entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, BOOL player, unsigned char *pSet)
 {
@@ -177,6 +116,7 @@ int AddToFullPack_Post(entity_state_s *state, int e, edict_t *ent, edict_t *host
 			HudMessage(ENT(ent), {0.05f, 0.05f, 0, hud_colors[0], hud_colors[1], hud_colors[2], 0, 0, 0, 0, 0, 0.0f, 0.0f, 1.0f, 0.0f, 3}, pMessage);
 		}
 
+		xg_huddamage(ent);
 		xg_bhop(ent);
 	}
 
@@ -423,8 +363,6 @@ void XG_Init(void)
 	g_engfuncs.pfnCVarRegister(&xg_bhop_boost_enabled);
 	g_engfuncs.pfnCVarRegister(&xg_bhop_boost_multipler);
 	// g_engfuncs.pfnCVarRegister(&xg_anti_csqq);
-
-	MakeHookTakeDamage();
 
 	RETURN_META(MRES_IGNORED);
 }
