@@ -38,7 +38,7 @@ cvar_t xg_hud_rainbow = {"xg_hud_rainbow", "0.0", FCVAR_SERVER};
 cvar_t xg_hud_speed = {"xg_hud_speed", "1.0", FCVAR_SERVER};
 cvar_t xg_bhop_enabled = {"xg_bhop_enabled", "1.0", FCVAR_SERVER};
 cvar_t xg_bhop_boost_enabled = {"xg_bhop_boost_enabled", "1.0", FCVAR_SERVER};
-cvar_t xg_bhop_boost_multipler = {"xg_bhop_boost_multipler", "250.0", FCVAR_SERVER};
+cvar_t xg_bhop_boost_multipler = {"xg_bhop_boost_multipler", "100.0", FCVAR_SERVER};
 
 byte hud_colors[3] = {
 	255,
@@ -95,7 +95,7 @@ int AddToFullPack_Post(entity_state_s *state, int e, edict_t *ent, edict_t *host
 		if (CVAR_GET_FLOAT("xg_hud_enabled"))
 		{
 			char pMessage[512];
-			strncpy(pMessage, "XGMOD v1.1\n", sizeof(pMessage));
+			strncpy(pMessage, "XGMOD v1.1 alpha beta\n", sizeof(pMessage));
 
 			if (CVAR_GET_FLOAT("xg_hud_speed"))
 			{
