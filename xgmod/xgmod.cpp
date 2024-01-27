@@ -39,6 +39,7 @@ cvar_t xg_hud_speed = {"xg_hud_speed", "1.0", FCVAR_SERVER};
 cvar_t xg_bhop_enabled = {"xg_bhop_enabled", "1.0", FCVAR_SERVER};
 cvar_t xg_bhop_boost_enabled = {"xg_bhop_boost_enabled", "1.0", FCVAR_SERVER};
 cvar_t xg_bhop_boost_multipler = {"xg_bhop_boost_multipler", "100.0", FCVAR_SERVER};
+cvar_t xg_bhop_boost_limit = {"xg_bhop_boost_limit", "1000.0", FCVAR_SERVER};
 
 byte hud_colors[3] = {
 	255,
@@ -362,6 +363,7 @@ void XG_Init(void)
 	g_engfuncs.pfnCVarRegister(&xg_bhop_enabled);
 	g_engfuncs.pfnCVarRegister(&xg_bhop_boost_enabled);
 	g_engfuncs.pfnCVarRegister(&xg_bhop_boost_multipler);
+	g_engfuncs.pfnCVarRegister(&xg_bhop_boost_limit);
 	// g_engfuncs.pfnCVarRegister(&xg_anti_csqq);
 
 	RETURN_META(MRES_IGNORED);

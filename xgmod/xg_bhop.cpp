@@ -41,7 +41,7 @@ int xg_bhop(edict_t *ent) {
             float pitch = -ent->v.v_angle[1] * (M_PI / 180.0);
 
 
-            if(CVAR_GET_FLOAT("xg_bhop_boost_enabled")) {
+            if(CVAR_GET_FLOAT("xg_bhop_boost_enabled") && CVAR_GET_FLOAT("xg_bhop_boost_limit") < hypot(ent->v.velocity[0], ent->v.velocity[1])) {
                 int multipler = CVAR_GET_FLOAT("xg_bhop_boost_multipler");
                 if(ent->v.v_angle[1] > 90 || ent->v.v_angle[1] < -90) {
                     multipler *= -1;
